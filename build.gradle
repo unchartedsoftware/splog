@@ -126,19 +126,19 @@ task stopTestEnv(overwrite: true, type: Exec) {
 
 task test(overwrite: true, type: Exec, dependsOn: [startTestEnv, jar, jarScoverage, testJar, docsJar, depsJar, scalaStyle]) {
   executable = 'docker'
-  args = ["exec", project.name, "spark-submit", "--packages", packages,"--jars","build/libs/${artifactName}-${version}-scoverage.jar,build/libs/${artifactName}-${version}-dependencies.jar","--class","software.uncharted.splog.TestRunner","build/libs/${artifactName}-${version}-tests.jar"]
+  args = ["exec", project.name, "spark-submit", "--conf", "spark.ui.showConsoleProgress=false", "--packages", packages,"--jars","build/libs/${artifactName}-${version}-scoverage.jar,build/libs/${artifactName}-${version}-dependencies.jar","--class","software.uncharted.splog.TestRunner","build/libs/${artifactName}-${version}-tests.jar"]
 }
 // test.finalizedBy stopTestEnv // this does slow down development, so we'll make it manual instead of automatic
 
 task debug(overwrite: true, type: Exec, dependsOn: [startTestEnv, jar, jarScoverage, testJar, docsJar, depsJar, scalaStyle]) {
   executable = 'docker'
-  args = ["exec", project.name, "/bin/bash", "-c", "export SPARK_JAVA_OPTS=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9999\" && spark-submit --packages ${packages} --jars build/libs/${artifactName}-${version}-scoverage.jar,build/libs/${artifactName}-${version}-dependencies.jar --class software.uncharted.flute.TestRunner build/libs/${artifactName}-${version}-tests.jar"]
+  args = ["exec", project.name, "/bin/bash", "-c", "export SPARK_JAVA_OPTS=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9999\" && spark-submit --conf spark.ui.showConsoleProgress=false --packages ${packages} --jars build/libs/${artifactName}-${version}-scoverage.jar,build/libs/${artifactName}-${version}-dependencies.jar --class software.uncharted.flute.TestRunner build/libs/${artifactName}-${version}-tests.jar"]
 }
 // debug.finalizedBy stopTestEnv // this does slow down development, so we'll make it manual instead of automatic
 
 task run(overwrite: true, type: Exec, dependsOn: [startTestEnv, jar, jarScoverage, testJar, docsJar, depsJar, scalaStyle]) {
   executable = 'docker'
-  args = ["exec", project.name, "spark-submit", "--packages", runPackages,"--jars","build/libs/${artifactName}-${version}-dependencies.jar","--class","software.uncharted.flute.munger.Main","build/libs/${artifactName}-${version}.jar"]
+  args = ["exec", project.name, "spark-submit", "--conf", "spark.ui.showConsoleProgress=false", "--packages", runPackages,"--jars","build/libs/${artifactName}-${version}-dependencies.jar","--class","software.uncharted.flute.munger.Main","build/libs/${artifactName}-${version}.jar"]
 }
 
 task coverage(overwrite: true, dependsOn: test) << {

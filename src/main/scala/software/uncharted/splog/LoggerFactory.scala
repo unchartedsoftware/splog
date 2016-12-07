@@ -56,6 +56,11 @@ object LoggerFactory {
   }
 
   def getLogger(source: String = "root"): Logger = {
-    new Logger(port, source)
+    if (!inDriver) {
+      throw new Exception("Cannot use getLogger() inside a Spark task (such as inside a map() closure)."
+        + " Please instantiate your logger outside the closure and let Spark serialize it in.")
+    } else {
+      new Logger(port, source)
+    }
   }
 }

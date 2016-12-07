@@ -10,6 +10,8 @@ import org.apache.spark.sql.SparkSession
 object Spark {
   val sparkSession = SparkSession.builder.appName("splog-test-runner").getOrCreate()
   val sc = sparkSession.sparkContext
+  val rootLogger = org.apache.log4j.Logger.getRootLogger()
+  rootLogger.setLevel(org.apache.log4j.Level.ERROR)
 }
 
 
