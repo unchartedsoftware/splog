@@ -32,6 +32,7 @@ Add the following to your `resources/application.properties`:
 ```
 splog.port=12345 # Pick an available port
 splog.level=TRACE # TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+splog.threads=4 # Number of "printing" threads. Increase if you're sending lots of messages per second.
 splog.date.format="yy/MM/dd HH:mm:ss z" # Anything that can be passed to SimpleDateFormat
 ```
 

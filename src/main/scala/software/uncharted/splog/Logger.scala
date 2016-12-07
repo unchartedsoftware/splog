@@ -29,6 +29,7 @@ class Logger(port: Int, source: String) extends Serializable {
   val driverHost: String = SparkContext.getOrCreate().getConf.get("spark.driver.host")
 
   def log(level: Level, msg: String, err: Option[Exception] = None): Unit = {
+    // TODO Don't eat exception
     Try({
       val s = new Socket(InetAddress.getByName(driverHost), port)
       val out = new PrintStream(s.getOutputStream())

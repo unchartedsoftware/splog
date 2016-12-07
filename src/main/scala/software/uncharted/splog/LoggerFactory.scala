@@ -23,8 +23,9 @@ object LoggerFactory {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
   private val conf: Config = ConfigFactory.load();
-  private val port = conf.getInt("splog.port") // TODO make configuration parameter
+  private val port = conf.getInt("splog.port")
   private var level = Level.withName(conf.getString("splog.level"))
+  private val threads = conf.getInt("splog.threads")
   private var dateFormat = conf.getString("splog.date.format")
   @transient private var receiver: Option[Receiver] = None;
 
@@ -41,7 +42,7 @@ object LoggerFactory {
   def start(out: java.io.PrintStream = Console.out): Unit = {
     this.synchronized {
       if (inDriver && !LoggerFactory.receiver.isDefined) {
-        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, dateFormat, out))
+        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, dateFormat, out, threads))
         new Thread(LoggerFactory.receiver.get).start
       }
     }

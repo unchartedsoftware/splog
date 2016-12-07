@@ -20,65 +20,39 @@ import java.net.ServerSocket
 import java.io.PrintStream
 import scala.io.BufferedSource
 import scala.util.Try
-import org.json.JSONObject
+import java.util.concurrent.{Executors, ExecutorService}
 
 private[splog] class Receiver(
   port: Int,
   dateFormat: String = "yy/MM/dd HH:mm:ss z",
-  out: PrintStream = Console.out
+  out: PrintStream = Console.out,
+  threads: Int = 4
 ) extends Runnable {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
   @volatile private var shouldRun = true
   private val server = new ServerSocket(port.toInt)
   private val format = new java.text.SimpleDateFormat(dateFormat)
+  private val pool: ExecutorService = Executors.newFixedThreadPool(threads)
 
   def stop(): Unit = {
     shouldRun = false
     Try(server.close()) // this stops the blocking call to accept()
   }
 
-  def doPrint(s: String): Unit = {
-    out.println(s) // scalastyle:ignore
-  }
-
-  def logJsonMessage(raw: String): Unit = {
-    val payload = new JSONObject(raw)
-    val level = Level.withName(payload.getString("level"))
-    val msg = payload.getString("msg")
-    val source = payload.getString("source")
-    val stack = if (payload.has("errStack")) Some(payload.getString("errStack")) else None
-    this.logMessage(level, msg, source, stack)
-  }
-
-  def logMessage(
-    level: Level,
-    msg: String,
-    source: String = "root",
-    stack: Option[String] = None
-  ) {
-    val timestamp = format.format(new java.util.Date())
-    // this can only run on the driver, so printing is safe
-    if (level >= LoggerFactory.getLevel) {
-      if (stack.isDefined) {
-        this.doPrint(s"$timestamp [$level] $source: $msg\n${stack.get}") // scalastyle:ignore
-      } else {
-        this.doPrint(s"$timestamp [$level] $source: $msg") // scalastyle:ignore
-      }
-    }
-  }
-
   def run() {
-    this.logMessage(TRACE, s"Starting logging service on port $port")
-    while (shouldRun) {
-      Try({
-        val s = server.accept() // blocks until a message comes in
-        // TODO handle message on thread pool
-        val in = new BufferedSource(s.getInputStream()).getLines()
-        this.logJsonMessage(in.next())
-        s.close()
-      })
+    try {
+      while (shouldRun) {
+        Try({
+          val s = server.accept() // blocks until a message comes in
+          val in = new BufferedSource(s.getInputStream()).getLines()
+          // spin off worker to handle message
+          pool.execute(new Printer(in.next, out, format))
+          s.close
+        })
+      }
+    } finally {
+      pool.shutdown
     }
-    this.logMessage(TRACE, s"Logging service on port $port is shutting down")
   }
 }
