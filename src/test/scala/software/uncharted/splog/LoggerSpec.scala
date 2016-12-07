@@ -42,7 +42,6 @@ class LoggerSpec extends FunSpec with BeforeAndAfter {
 
   describe("splog.Logger") {
     it("Should do something") {
-      LoggerFactory.start()
       val logger = LoggerFactory.getLogger("test")
       logger.info("Hello world!")
       logger.error("Oh snap!", new Exception("Oh snap!"))

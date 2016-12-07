@@ -21,16 +21,16 @@ import scala.io.{BufferedSource}
 import scala.util.Try
 import org.json.JSONObject
 
-private[splog] class Receiver(port: Int) extends Runnable {
+private[splog] class Receiver(port: Int, dateFormat: String = "yy/MM/dd HH:mm:ss z") extends Runnable {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
   @volatile private var shouldRun = true
   private val server = new ServerSocket(port.toInt)
-  private val format = new java.text.SimpleDateFormat("yy/MM/dd HH:mm:ss z")
+  private val format = new java.text.SimpleDateFormat(dateFormat)
 
   def stop(): Unit = {
     shouldRun = false
-    server.close() // this stops the blocking call to accept()
+    Try(server.close()) // this stops the blocking call to accept()
   }
 
   def logJsonMessage(raw: String): Unit = {

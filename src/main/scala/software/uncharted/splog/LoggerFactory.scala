@@ -17,12 +17,15 @@
 package software.uncharted.splog
 
 import org.apache.spark.{TaskContext, SparkContext}
+import com.typesafe.config.{Config, ConfigFactory}
 
 object LoggerFactory {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
-  private val port = 12345 // TODO make configuration parameter
-  private var level = TRACE
+  private val conf: Config = ConfigFactory.load();
+  private val port = conf.getInt("splog.port") // TODO make configuration parameter
+  private var level = Level.withName(conf.getString("splog.level"))
+  private var dateFormat = conf.getString("splog.date.format")
   @transient private var receiver: Option[Receiver] = None;
 
   def setLevel(level: Level): Unit = {
@@ -36,7 +39,7 @@ object LoggerFactory {
   def start(): Unit = {
     this.synchronized {
       if (inDriver && !LoggerFactory.receiver.isDefined) {
-        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port))
+        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, dateFormat))
         new Thread(LoggerFactory.receiver.get).start
       }
     }
@@ -53,6 +56,6 @@ object LoggerFactory {
   }
 
   def getLogger(source: String = "root"): Logger = {
-    new Logger(source)
+    new Logger(port, source)
   }
 }

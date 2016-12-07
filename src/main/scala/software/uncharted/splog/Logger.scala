@@ -23,10 +23,9 @@ import scala.io.{BufferedSource}
 import scala.util.Try
 import org.json.JSONObject
 
-class Logger(source: String) extends Serializable {
+class Logger(port: Int, source: String) extends Serializable {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
-  val port = 12345 // TODO make configuration parameter
   val driverHost: String = SparkContext.getOrCreate().getConf.get("spark.driver.host")
 
   def log(level: Level, msg: String, err: Option[Exception] = None): Unit = {
