@@ -21,8 +21,8 @@ val logger = LoggerFactory.getLogger("test")
 logger.info("Hello world!") // we can log outside!
 rdd.foreach(r => {
   logger.info(r._2) // we can log inside!
-}).collect()
-// we can log anywhere!!!
+})
+// we can log everywhere!!!
 ```
 
 ## Configuration

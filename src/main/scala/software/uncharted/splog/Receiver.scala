@@ -16,12 +16,17 @@
 
 package software.uncharted.splog
 
-import java.net.{ServerSocket}
-import scala.io.{BufferedSource}
+import java.net.ServerSocket
+import java.io.PrintStream
+import scala.io.BufferedSource
 import scala.util.Try
 import org.json.JSONObject
 
-private[splog] class Receiver(port: Int, dateFormat: String = "yy/MM/dd HH:mm:ss z") extends Runnable {
+private[splog] class Receiver(
+  port: Int,
+  dateFormat: String = "yy/MM/dd HH:mm:ss z",
+  out: PrintStream = Console.out
+) extends Runnable {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
   @volatile private var shouldRun = true
@@ -31,6 +36,10 @@ private[splog] class Receiver(port: Int, dateFormat: String = "yy/MM/dd HH:mm:ss
   def stop(): Unit = {
     shouldRun = false
     Try(server.close()) // this stops the blocking call to accept()
+  }
+
+  def doPrint(s: String): Unit = {
+    out.println(s) // scalastyle:ignore
   }
 
   def logJsonMessage(raw: String): Unit = {
@@ -52,9 +61,9 @@ private[splog] class Receiver(port: Int, dateFormat: String = "yy/MM/dd HH:mm:ss
     // this can only run on the driver, so printing is safe
     if (level >= LoggerFactory.getLevel) {
       if (stack.isDefined) {
-        println(s"$timestamp [$level] $source: $msg\n${stack.get}") // scalastyle:ignore
+        this.doPrint(s"$timestamp [$level] $source: $msg\n${stack.get}") // scalastyle:ignore
       } else {
-        println(s"$timestamp [$level] $source: $msg") // scalastyle:ignore
+        this.doPrint(s"$timestamp [$level] $source: $msg") // scalastyle:ignore
       }
     }
   }
@@ -64,6 +73,7 @@ private[splog] class Receiver(port: Int, dateFormat: String = "yy/MM/dd HH:mm:ss
     while (shouldRun) {
       Try({
         val s = server.accept() // blocks until a message comes in
+        // TODO handle message on thread pool
         val in = new BufferedSource(s.getInputStream()).getLines()
         this.logJsonMessage(in.next())
         s.close()

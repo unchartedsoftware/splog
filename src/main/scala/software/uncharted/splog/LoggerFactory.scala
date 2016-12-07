@@ -29,25 +29,30 @@ object LoggerFactory {
   @transient private var receiver: Option[Receiver] = None;
 
   def setLevel(level: Level): Unit = {
-    LoggerFactory.level = level
+    this.synchronized {
+      LoggerFactory.level = level
+    }
   }
 
   def getLevel: Level = {
     level
   }
 
-  def start(): Unit = {
+  def start(out: java.io.PrintStream = Console.out): Unit = {
     this.synchronized {
       if (inDriver && !LoggerFactory.receiver.isDefined) {
-        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, dateFormat))
+        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, dateFormat, out))
         new Thread(LoggerFactory.receiver.get).start
       }
     }
   }
 
   def shutdown(): Unit = {
-    if (LoggerFactory.receiver.isDefined) {
-      LoggerFactory.receiver.get.stop()
+    this.synchronized {
+      if (LoggerFactory.receiver.isDefined) {
+        LoggerFactory.receiver.get.stop()
+        LoggerFactory.receiver = None
+      }
     }
   }
 
@@ -60,6 +65,7 @@ object LoggerFactory {
       throw new Exception("Cannot use getLogger() inside a Spark task (such as inside a map() closure)."
         + " Please instantiate your logger outside the closure and let Spark serialize it in.")
     } else {
+      this.start()
       new Logger(port, source)
     }
   }
