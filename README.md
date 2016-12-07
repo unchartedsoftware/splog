@@ -1,4 +1,4 @@
-# splog
+# splog [![Build Status](https://travis-ci.org/unchartedsoftware/splog.svg?branch=master)](https://travis-ci.org/unchartedsoftware/splog) [![Coverage Status](https://coveralls.io/repos/github/unchartedsoftware/splog/badge.svg?branch=master)](https://coveralls.io/github/unchartedsoftware/splog?branch=master)
 
 > Because splogging doesn't sound wrong at all.
 
