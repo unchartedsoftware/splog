@@ -41,7 +41,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
 
   override def afterEach {
     LoggerFactory.shutdown()
-    Thread.sleep(50)
+    Thread.sleep(200)
     baos.close
   }
 
@@ -52,7 +52,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
     it("Should support logging outside transformations") {
       val logger = LoggerFactory.getLogger("test")
       logger.info("Hello world!")
-      Thread.sleep(50)
+      Thread.sleep(200)
       val log = baos.toString
       log should include ("[INFO] test: Hello world!")
     }
@@ -63,7 +63,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
         logger.info(r._2)
         r
       }).collect
-      Thread.sleep(50)
+      Thread.sleep(200)
       val log = baos.toString
       log should include ("[INFO] test: first")
       log should include ("[INFO] test: second")
@@ -75,7 +75,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       val logger = LoggerFactory.getLogger("test")
       logger.info(1234)
       logger.info(1.234F)
-      Thread.sleep(50)
+      Thread.sleep(200)
       val log = baos.toString
       log should include ("[INFO] test: 1234")
       log should include ("[INFO] test: 1.234")
@@ -85,7 +85,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       val logger = LoggerFactory.getLogger("test")
       LoggerFactory.setLevel(Level.OFF)
       logger.trace("Hello world!")
-      Thread.sleep(50)
+      Thread.sleep(200)
       val log = baos.toString
       log should not include ("[TRACE] test: Hello world!")
     }
@@ -106,7 +106,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       LoggerFactory.start()
       val logger = LoggerFactory.getLogger("test")
       logger.info("Hello world!")
-      Thread.sleep(50)
+      Thread.sleep(200)
       val log = baos.toString
       log should include ("[INFO] test: Hello world!")
     }
@@ -120,7 +120,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       intercept[Exception] {
         val logger = LoggerFactory.getLogger("test")
         LoggerFactory.shutdown()
-        Thread.sleep(50)
+        Thread.sleep(200)
         logger.trace("Hello world!")
       }
     }
@@ -129,7 +129,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages with level TRACE") {
         val logger = LoggerFactory.getLogger("test")
         logger.trace("Hello world!")
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[TRACE] test: Hello world!")
       }
@@ -137,7 +137,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages and errors with level TRACE") {
         val logger = LoggerFactory.getLogger("test")
         logger.trace("Hello world!", new Exception("whoops!"))
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[TRACE] test: Hello world!")
         log should include ("whoops!")
@@ -148,7 +148,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages with level DEBUG") {
         val logger = LoggerFactory.getLogger("test")
         logger.debug("Hello world!")
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[DEBUG] test: Hello world!")
       }
@@ -156,7 +156,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages and errors with level DEBUG") {
         val logger = LoggerFactory.getLogger("test")
         logger.debug("Hello world!", new Exception("whoops!"))
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[DEBUG] test: Hello world!")
         log should include ("whoops!")
@@ -167,7 +167,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages with level INFO") {
         val logger = LoggerFactory.getLogger("test")
         logger.info("Hello world!")
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[INFO] test: Hello world!")
       }
@@ -175,7 +175,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages and errors with level INFO") {
         val logger = LoggerFactory.getLogger("test")
         logger.info("Hello world!", new Exception("whoops!"))
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[INFO] test: Hello world!")
         log should include ("whoops!")
@@ -186,7 +186,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages with level WARN") {
         val logger = LoggerFactory.getLogger("test")
         logger.warn("Hello world!")
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[WARN] test: Hello world!")
       }
@@ -194,7 +194,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages and errors with level WARN") {
         val logger = LoggerFactory.getLogger("test")
         logger.warn("Hello world!", new Exception("whoops!"))
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[WARN] test: Hello world!")
         log should include ("whoops!")
@@ -205,7 +205,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages with level ERROR") {
         val logger = LoggerFactory.getLogger("test")
         logger.error("Hello world!")
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[ERROR] test: Hello world!")
       }
@@ -213,7 +213,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages and errors with level ERROR") {
         val logger = LoggerFactory.getLogger("test")
         logger.error("Hello world!", new Exception("whoops!"))
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[ERROR] test: Hello world!")
         log should include ("whoops!")
@@ -224,7 +224,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages with level FATAL") {
         val logger = LoggerFactory.getLogger("test")
         logger.fatal("Hello world!")
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[FATAL] test: Hello world!")
       }
@@ -232,7 +232,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       it("Should allow logging of messages and errors with level FATAL") {
         val logger = LoggerFactory.getLogger("test")
         logger.fatal("Hello world!", new Exception("whoops!"))
-        Thread.sleep(50)
+        Thread.sleep(200)
         val log = baos.toString
         log should include ("[FATAL] test: Hello world!")
         log should include ("whoops!")
