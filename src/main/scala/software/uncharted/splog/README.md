@@ -1,0 +1,61 @@
+# splog
+
+> Because splogging doesn't sound wrong at all.
+
+`splog` is a simple logging framework for Apache Spark which spits all log content, from any node in the cluster, to the driver's `stdout` immediately upon receipt. Log messages can be generated both inside and outside serialized closures, and are logged whenever that closure is executed (usually when you perform a terminating action like `collect` or `take`).
+
+## Getting started
+
+*build.gradle*
+
+```groovy
+compile  "software.uncharted:splog:splog:0.0.1"
+```
+
+*Script.scala*
+
+```scala
+import software.uncharted.splog.LoggerFactory
+
+val logger = LoggerFactory.getLogger("test")
+logger.info("Hello world!") // we can log outside!
+rdd.foreach(r => {
+  logger.info(r._2) // we can log inside!
+}).collect()
+// we can log anywhere!!!
+```
+
+## Configuration
+
+Add the following to your `resources/application.properties`:
+
+```
+splog.port=12345 # Pick an available port
+splog.level=TRACE # TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+splog.date.format="yy/MM/dd HH:mm:ss z" # Anything that can be passed to SimpleDateFormat
+```
+
+## Spark Configuration
+
+*log4j.properties*
+
+```
+# This silences Spark output during tests/operation
+log4j.rootCategory=ERROR, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.target=System.err
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
+
+# Settings to quiet third party logs that are too verbose
+log4j.logger.org.spark-project.jetty=ERROR
+log4j.logger.org.spark-project.jetty.util.component.AbstractLifeCycle=ERROR
+log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=ERROR
+log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=ERROR
+```
+
+*spark-submit*
+
+Turn off those ridiculous stdout progress bars with:
+
+`spark-submit --conf spark.ui.showConsoleProgress=false`
