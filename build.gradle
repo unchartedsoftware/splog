@@ -48,6 +48,7 @@ apply plugin: 'maven'
 apply plugin: 'scala'
 apply plugin: 'scalaStyle'
 apply plugin: 'org.scoverage'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -208,30 +209,60 @@ task wrapper(type: Wrapper) {
 //BEGIN nexus oss
 //////////////////////////////////////
 artifacts {
-  archives sourcesJar, docsJar
+  archives docsJar, testJar, sourcesJar
 }
-
+signing {
+  sign configurations.archives
+}
+//make sure assemble doesn't depend on signing
+gradle.taskGraph.whenReady { taskGraph ->
+  def tasks = taskGraph.getAllTasks()
+  if (tasks.find {it.name == 'assemble'}) {
+    tasks.findAll {it.name == 'signArchives' || it.name == 'signDocsJar' || it.name == 'signTestJar' || it.name == 'signSourcesJar'}.each { task ->
+      task.enabled = false
+    }
+  }
+}
 uploadArchives {
   repositories {
     mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> deployment }
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      repository(url: 'https://nexus.uncharted.software/repository/uncharted-releases/') {
-        authentication(userName: nexusUsername, password: nexusPassword)
-        pom.version = version
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
       }
 
-      snapshotRepository(url: 'https://nexus.uncharted.software/repository/uncharted-snapshots/') {
-        authentication(userName: nexusUsername, password: nexusPassword)
-        pom.version = version
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
       }
 
       pom.project {
         name = artifactName
         packaging = 'jar'
-        version = version
         // optionally artifactId can be defined here
         description = description
+        url = url
+
+        scm {
+          connection 'scm:git:git://github.com/unchartedsoftware/splog.git'
+          developerConnection 'scm:git:git@github.com:unchartedsoftware/splog.git'
+          url 'https://github.com/unchartedsoftware/splog'
+        }
+
+        licenses {
+          license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+
+        developers {
+          developer {
+            id = 'smcintyre'
+            name = 'Sean McIntyre'
+            email = 'smcintyre@uncharted.software'
+          }
+        }
       }
     }
   }
