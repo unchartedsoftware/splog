@@ -1,0 +1,27 @@
+sudo: required
+
+language: java
+
+services:
+  - docker
+
+env:
+  # build against multiple versions of spark!
+  - SPARK_VERSION=2.0.1
+
+before_script:
+  # generate environment file so we can give the travis environment to our test container
+  - env | grep TRAVIS_ > travis.env
+  - echo "GRADLE_OPTS=-Dorg.gradle.native=false" >> travis.env
+  - echo "CI_NAME=travis_ci" >> travis.env
+  - echo "CI=true" >> travis.env
+  - echo "TRAVIS=true" >> travis.env
+  - echo "CONTINUOUS_INTEGRATION=true" >> travis.env
+  - echo "DEBIAN_FRONTEND=noninteractive" >> travis.env
+  - echo "HAS_JOSH_K_SEAL_OF_APPROVAL" >> travis.env
+  - echo $SPARK_VERSION >> travis.env
+  - ./gradlew startTestEnv
+
+script:
+  # build and test
+  - ./gradlew coverage coveralls
