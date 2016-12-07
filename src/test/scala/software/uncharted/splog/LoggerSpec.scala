@@ -1,18 +1,18 @@
 /*
-* Copyright 2016 Uncharted Software Inc.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2016 Uncharted Software Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package software.uncharted.splog
 
@@ -104,6 +104,15 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
     it("Double shutdowns shouldn't break things") {
       LoggerFactory.shutdown()
       LoggerFactory.shutdown()
+    }
+
+    it("Should throw if it can't connect to the receiver") {
+      intercept[Exception] {
+        val logger = LoggerFactory.getLogger("test")
+        LoggerFactory.shutdown()
+        Thread.sleep(50)
+        logger.trace("Hello world!")
+      }
     }
 
     describe("#trace") {

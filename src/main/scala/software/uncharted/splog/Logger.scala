@@ -20,7 +20,6 @@ import org.apache.spark.{TaskContext, SparkContext}
 import java.net.{InetAddress, Socket, ServerSocket}
 import java.io.{StringWriter, PrintWriter, PrintStream}
 import scala.io.{BufferedSource}
-import scala.util.Try
 import org.json.JSONObject
 
 class Logger(port: Int, source: String) extends Serializable {
@@ -29,25 +28,22 @@ class Logger(port: Int, source: String) extends Serializable {
   val driverHost: String = SparkContext.getOrCreate().getConf.get("spark.driver.host")
 
   def log(level: Level, msg: String, err: Option[Exception] = None): Unit = {
-    // TODO Don't eat exception
-    Try({
-      val s = new Socket(InetAddress.getByName(driverHost), port)
-      val out = new PrintStream(s.getOutputStream())
-      val payload = new JSONObject
-      payload.put("level", level)
-      payload.put("msg", msg)
-      payload.put("source", source)
-      if (err.isDefined) {
-        val sw: StringWriter = new StringWriter()
-        val pw: PrintWriter = new PrintWriter(sw)
-        err.get.printStackTrace(pw)
-        payload.put("errStack", sw.toString)
-      }
-      // not printing to stdout, so this is safe
-      out.println(payload.toString) // scalastyle:ignore
-      out.flush
-      s.close
-    })
+    val s = new Socket(InetAddress.getByName(driverHost), port)
+    val out = new PrintStream(s.getOutputStream())
+    val payload = new JSONObject
+    payload.put("level", level)
+    payload.put("msg", msg)
+    payload.put("source", source)
+    if (err.isDefined) {
+      val sw: StringWriter = new StringWriter()
+      val pw: PrintWriter = new PrintWriter(sw)
+      err.get.printStackTrace(pw)
+      payload.put("errStack", sw.toString)
+    }
+    // not printing to stdout, so this is safe
+    out.println(payload.toString) // scalastyle:ignore
+    out.flush
+    s.close
   }
 
   def trace(msg: String): Unit = {
