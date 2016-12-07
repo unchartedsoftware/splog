@@ -71,6 +71,16 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       log should include ("[INFO] test: fourth")
     }
 
+    it("Should support anything that has a toString method") {
+      val logger = LoggerFactory.getLogger("test")
+      logger.info(1234)
+      logger.info(1.234F)
+      Thread.sleep(50)
+      val log = baos.toString
+      log should include ("[INFO] test: 1234")
+      log should include ("[INFO] test: 1.234")
+    }
+
     it("Should print nothing when log level is set to OFF") {
       val logger = LoggerFactory.getLogger("test")
       LoggerFactory.setLevel(Level.OFF)

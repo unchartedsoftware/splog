@@ -27,12 +27,12 @@ class Logger(port: Int, source: String) extends Serializable {
 
   val driverHost: String = SparkContext.getOrCreate().getConf.get("spark.driver.host")
 
-  def log(level: Level, msg: String, err: Option[Exception] = None): Unit = {
+  def log(level: Level, msg: Any, err: Option[Exception] = None): Unit = {
     val s = new Socket(InetAddress.getByName(driverHost), port)
     val out = new PrintStream(s.getOutputStream())
     val payload = new JSONObject
     payload.put("level", level)
-    payload.put("msg", msg)
+    payload.put("msg", msg.toString)
     payload.put("source", source)
     if (err.isDefined) {
       val sw: StringWriter = new StringWriter()
@@ -46,53 +46,51 @@ class Logger(port: Int, source: String) extends Serializable {
     s.close
   }
 
-  def trace(msg: String): Unit = {
+  def trace(msg: Any): Unit = {
     this.log(TRACE, msg, None)
   }
 
-  def trace(msg: String, err: Exception): Unit = {
+  def trace(msg: Any, err: Exception): Unit = {
     this.log(TRACE, msg, Some(err))
   }
 
-  def debug(msg: String): Unit = {
+  def debug(msg: Any): Unit = {
     this.log(DEBUG, msg, None)
   }
 
-  def debug(msg: String, err: Exception): Unit = {
+  def debug(msg: Any, err: Exception): Unit = {
     this.log(DEBUG, msg, Some(err))
   }
 
-  def info(msg: String): Unit = {
+  def info(msg: Any): Unit = {
     this.log(INFO, msg, None)
   }
 
-  def info(msg: String, err: Exception): Unit = {
+  def info(msg: Any, err: Exception): Unit = {
     this.log(INFO, msg, Some(err))
   }
 
-  def warn(msg: String): Unit = {
+  def warn(msg: Any): Unit = {
     this.log(WARN, msg, None)
   }
 
-  def warn(msg: String, err: Exception): Unit = {
+  def warn(msg: Any, err: Exception): Unit = {
     this.log(WARN, msg, Some(err))
   }
 
-  def error(msg: String): Unit = {
+  def error(msg: Any): Unit = {
     this.log(ERROR, msg, None)
   }
 
-  def error(msg: String, err: Exception): Unit = {
+  def error(msg: Any, err: Exception): Unit = {
     this.log(ERROR, msg, Some(err))
   }
 
-  def fatal(msg: String): Unit = {
+  def fatal(msg: Any): Unit = {
     this.log(FATAL, msg, None)
   }
 
   def fatal(msg: String, err: Exception): Unit = {
     this.log(FATAL, msg, Some(err))
   }
-
-  // TODO implement specific logging functions, including error one which takes an Exception
 }
