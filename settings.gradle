@@ -1,0 +1,7 @@
+rootProject.name = 'splog'
+gradle.ext.version = '0.0.1'
+gradle.ext.description = 'sane spark logging'
+gradle.ext.inceptionYear = '2016'
+gradle.ext.group = 'software.uncharted.splog'
+gradle.ext.artifactName = rootProject.name
+gradle.ext.url = "https://stash.uncharted.software/projects/FLT/repos/${rootProject.name}"

@@ -1,0 +1,248 @@
+/**
+ * $ ./gradlew
+ *
+ * Everything you need to edit is in settings.gradle.
+ */
+
+group = gradle.ext.group
+version = gradle.ext.version
+
+project.ext {
+  artifactName = rootProject.name
+  description = gradle.ext.description
+  inceptionYear = gradle.ext.inceptionYear
+  url = gradle.ext.url
+  scalaBinaryVersion = '2.11'
+  scalaVersion = '2.11.8'
+  fabricatorVersion = '2.1.3'
+  sparkVersion = System.getenv("SPARK_VERSION") ?: '2.0.1'
+  scoverageVersion = '1.1.1'
+  scalatestVersion = '2.2.6'
+  pegdownVersion = '1.6.0'
+  mockitoVersion = '1.10.19'
+  packages = "org.mockito:mockito-all:${mockitoVersion},org.scalatest:scalatest_${scalaBinaryVersion}:${scalatestVersion},org.scoverage:scalac-scoverage-runtime_${scalaBinaryVersion}:${scoverageVersion}"
+  runPackages = ""
+  nexusUsername = 'deploy'
+  nexusPassword = 'deploy123'
+}
+
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+  }
+  dependencies {
+    classpath "com.github.maiflai:gradle-scalatest:0.12"
+    classpath "org.github.ngbinh.scalastyle:gradle-scalastyle-plugin_2.10:0.8.2"
+    classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3"
+    classpath "org.scoverage:gradle-scoverage:2.0.1"
+  }
+}
+
+apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'com.github.maiflai.scalatest'
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'scala'
+apply plugin: 'scalaStyle'
+apply plugin: 'org.scoverage'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations {
+  provided
+}
+
+jar {
+  baseName = "${artifactName}"
+  version =  version
+  dependsOn configurations.runtime
+  from {
+    (configurations.runtime - configurations.provided).collect {
+      it.isDirectory() ? it : zipTree(it)
+    }
+  } {
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/*.RSA"
+  }
+}
+
+task docs(type: ScalaDoc) {
+  source = sourceSets.main.allScala
+}
+
+task docsJar(type: Jar, dependsOn: docs) {
+  classifier = 'scaladoc'
+  from docs.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+// only for testing purposes - coverage JAR isn't fat.
+task depsJar(type: Jar) {
+  classifier = 'dependencies'
+  dependsOn configurations.runtime
+  from {
+    (configurations.runtime - configurations.provided).collect {
+      it.isDirectory() ? it : zipTree(it)
+    }
+  } {
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/*.RSA"
+  }
+}
+
+checkScoverage {
+  minimumRate = 1
+}
+
+task testJar(type: Jar) {
+  classifier = 'tests'
+  from sourceSets.test.output
+}
+
+task startTestEnv(overwrite: true, type: Exec) {
+  executable = './test-environment.sh'
+  args = ["start"]
+}
+
+task stopTestEnv(overwrite: true, type: Exec) {
+  executable = './test-environment.sh'
+  args = ["stop"]
+}
+
+task test(overwrite: true, type: Exec, dependsOn: [startTestEnv, jar, jarScoverage, testJar, docsJar, depsJar, scalaStyle]) {
+  executable = 'docker'
+  args = ["exec", project.name, "spark-submit", "--packages", packages,"--jars","build/libs/${artifactName}-${version}-scoverage.jar,build/libs/${artifactName}-${version}-dependencies.jar","--class","software.uncharted.splog.TestRunner","build/libs/${artifactName}-${version}-tests.jar"]
+}
+// test.finalizedBy stopTestEnv // this does slow down development, so we'll make it manual instead of automatic
+
+task debug(overwrite: true, type: Exec, dependsOn: [startTestEnv, jar, jarScoverage, testJar, docsJar, depsJar, scalaStyle]) {
+  executable = 'docker'
+  args = ["exec", project.name, "/bin/bash", "-c", "export SPARK_JAVA_OPTS=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9999\" && spark-submit --packages ${packages} --jars build/libs/${artifactName}-${version}-scoverage.jar,build/libs/${artifactName}-${version}-dependencies.jar --class software.uncharted.flute.TestRunner build/libs/${artifactName}-${version}-tests.jar"]
+}
+// debug.finalizedBy stopTestEnv // this does slow down development, so we'll make it manual instead of automatic
+
+task run(overwrite: true, type: Exec, dependsOn: [startTestEnv, jar, jarScoverage, testJar, docsJar, depsJar, scalaStyle]) {
+  executable = 'docker'
+  args = ["exec", project.name, "spark-submit", "--packages", runPackages,"--jars","build/libs/${artifactName}-${version}-dependencies.jar","--class","software.uncharted.flute.munger.Main","build/libs/${artifactName}-${version}.jar"]
+}
+
+task coverage(overwrite: true, dependsOn: test) << {
+  reportScoverage.execute()
+  checkScoverage.execute()
+}
+
+coveralls {
+  coberturaReportPath = "${buildDir}/reports/scoverage/cobertura.xml"
+}
+
+scalaStyle {
+  configLocation = "scalastyle_config.xml"
+  includeTestSourceDirectory = true
+  source = sourceSets.main.allScala
+  testSource = sourceSets.test.allScala
+  failOnWarning = true
+}
+
+sourceSets {
+  main { compileClasspath += configurations.provided }
+  test {
+    compileClasspath += configurations.provided
+    runtimeClasspath += configurations.provided
+  }
+  scoverage { compileClasspath += configurations.provided }
+  testScoverage { compileClasspath += configurations.provided }
+}
+
+dependencies {
+  //scala
+  provided("org.scala-lang:scala-library:${scalaVersion}")
+
+  //spark
+  provided "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+  provided "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+
+  // Uncomment as needed
+  // provided "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
+  // provided "org.apache.spark:spark-graphx_${scalaBinaryVersion}:${sparkVersion}"
+  // provided "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+
+  //scalatest
+  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:${scalatestVersion}"
+  testRuntime "org.pegdown:pegdown:${pegdownVersion}"
+
+  //mockito
+  testCompile "org.mockito:mockito-all:${mockitoVersion}"
+
+  //scoverage
+  scoverage "org.scoverage:scalac-scoverage-plugin_${scalaBinaryVersion}:${scoverageVersion}",
+            "org.scoverage:scalac-scoverage-runtime_${scalaBinaryVersion}:${scoverageVersion}"
+
+  // org.json
+  compile "org.json:json:20160810"
+
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.13'
+}
+
+//////////////////////////////////////
+//BEGIN nexus oss
+//////////////////////////////////////
+artifacts {
+  archives sourcesJar, docsJar
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> deployment }
+
+      repository(url: 'https://nexus.uncharted.software/repository/uncharted-releases/') {
+        authentication(userName: nexusUsername, password: nexusPassword)
+        pom.version = version
+      }
+
+      snapshotRepository(url: 'https://nexus.uncharted.software/repository/uncharted-snapshots/') {
+        authentication(userName: nexusUsername, password: nexusPassword)
+        pom.version = version
+      }
+
+      pom.project {
+        name = artifactName
+        packaging = 'jar'
+        version = version
+        // optionally artifactId can be defined here
+        description = description
+      }
+    }
+  }
+}
+//////////////////////////////////////
+//END nexus oss
+//////////////////////////////////////
+
+idea {
+  module {
+    inheritOutputDirs = false
+    outputDir = file("$buildDir/classes/main/")
+    scopes.PROVIDED.plus += [ configurations.provided ]
+  }
+}
+
+defaultTasks 'coverage'
