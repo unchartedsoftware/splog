@@ -9,7 +9,7 @@
 *build.gradle*
 
 ```groovy
-compile  "software.uncharted:splog:splog:0.0.1"
+compile  "software.uncharted.splog:splog:0.0.1"
 ```
 
 *Script.scala*
