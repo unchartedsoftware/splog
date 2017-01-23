@@ -9,6 +9,8 @@ env:
   # build against multiple versions of spark!
   - SPARK_VERSION=2.0.1
 
+install: true
+
 before_script:
   # generate environment file so we can give the travis environment to our test container
   - env | grep TRAVIS_ > travis.env
