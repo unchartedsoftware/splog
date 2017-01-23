@@ -13,3 +13,7 @@ gradle.properties
 _site
 /core
 *.swp
+.classpath
+.project
+.settings
+bin

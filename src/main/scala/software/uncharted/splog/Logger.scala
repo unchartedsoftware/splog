@@ -27,7 +27,7 @@ class Logger(port: Int, source: String) extends Serializable {
 
   val driverHost: String = SparkContext.getOrCreate().getConf.get("spark.driver.host")
 
-  def log(level: Level, msg: Any, err: Option[Exception] = None): Unit = {
+  def log(level: Level, msg: Any, err: Option[Throwable] = None): Unit = {
     val s = new Socket(InetAddress.getByName(driverHost), port)
     val out = new PrintStream(s.getOutputStream())
     val payload = new JSONObject
@@ -50,7 +50,7 @@ class Logger(port: Int, source: String) extends Serializable {
     this.log(TRACE, msg, None)
   }
 
-  def trace(msg: Any, err: Exception): Unit = {
+  def trace(msg: Any, err: Throwable): Unit = {
     this.log(TRACE, msg, Some(err))
   }
 
@@ -58,7 +58,7 @@ class Logger(port: Int, source: String) extends Serializable {
     this.log(DEBUG, msg, None)
   }
 
-  def debug(msg: Any, err: Exception): Unit = {
+  def debug(msg: Any, err: Throwable): Unit = {
     this.log(DEBUG, msg, Some(err))
   }
 
@@ -66,7 +66,7 @@ class Logger(port: Int, source: String) extends Serializable {
     this.log(INFO, msg, None)
   }
 
-  def info(msg: Any, err: Exception): Unit = {
+  def info(msg: Any, err: Throwable): Unit = {
     this.log(INFO, msg, Some(err))
   }
 
@@ -74,7 +74,7 @@ class Logger(port: Int, source: String) extends Serializable {
     this.log(WARN, msg, None)
   }
 
-  def warn(msg: Any, err: Exception): Unit = {
+  def warn(msg: Any, err: Throwable): Unit = {
     this.log(WARN, msg, Some(err))
   }
 
@@ -82,7 +82,7 @@ class Logger(port: Int, source: String) extends Serializable {
     this.log(ERROR, msg, None)
   }
 
-  def error(msg: Any, err: Exception): Unit = {
+  def error(msg: Any, err: Throwable): Unit = {
     this.log(ERROR, msg, Some(err))
   }
 
@@ -90,7 +90,7 @@ class Logger(port: Int, source: String) extends Serializable {
     this.log(FATAL, msg, None)
   }
 
-  def fatal(msg: String, err: Exception): Unit = {
+  def fatal(msg: String, err: Throwable): Unit = {
     this.log(FATAL, msg, Some(err))
   }
 }

@@ -1,5 +1,5 @@
 rootProject.name = 'splog'
-gradle.ext.version = '0.0.1'
+gradle.ext.version = '0.0.2'
 gradle.ext.description = 'sane spark logging'
 gradle.ext.inceptionYear = '2016'
 gradle.ext.group = 'software.uncharted.splog'
