@@ -61,13 +61,13 @@ object LoggerFactory {
     TaskContext.get == null
   }
 
-  def getLogger(source: String = "root"): Logger = {
+  def getLogger(source: String = "root", driverHost: Option[String] = None): Logger = {
     if (!inDriver) {
       throw new Exception("Cannot use getLogger() inside a Spark task (such as inside a map() closure)."
         + " Please instantiate your logger outside the closure and let Spark serialize it in.")
     } else {
       this.start()
-      new Logger(port, source)
+      new Logger(port, source, driverHost.getOrElse(SparkContext.getOrCreate().getConf.get("spark.driver.host")))
     }
   }
 }

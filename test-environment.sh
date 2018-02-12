@@ -20,7 +20,7 @@ create_test_environment() {
   -v /`pwd`:`pwd` \
   -it \
   --workdir="/`pwd`" \
-  uncharted/sparklet:2.0.1 bash
+  uncharted/sparklet:2.2.1 bash
 }
 
 run_test_environment() {

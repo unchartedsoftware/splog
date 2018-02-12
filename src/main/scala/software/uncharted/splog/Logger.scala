@@ -22,10 +22,12 @@ import java.io.{StringWriter, PrintWriter, PrintStream}
 import scala.io.{BufferedSource}
 import org.json.JSONObject
 
-class Logger(port: Int, source: String) extends Serializable {
+class Logger(
+  port: Int,
+  source: String,
+  driverHost: String
+) extends Serializable {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
-
-  val driverHost: String = SparkContext.getOrCreate().getConf.get("spark.driver.host")
 
   def log(level: Level, msg: Any, err: Option[Throwable] = None): Unit = {
     val s = new Socket(InetAddress.getByName(driverHost), port)
