@@ -24,6 +24,8 @@ project.ext {
   runPackages = ""
   nexusUsername = 'deploy'
   nexusPassword = 'deploy123'
+  ossrhUsername = project.hasProperty('ossrhUsername') ? project.getProperty('ossrhUsername') : ''
+  ossrhPassword = project.hasProperty('ossrhPassword') ? project.getProperty('ossrhPassword') : ''
 }
 
 buildscript {
