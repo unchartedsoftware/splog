@@ -102,6 +102,16 @@ class LoggerSpec extends FunSpec with BeforeAndAfter with BeforeAndAfterEach wit
       assert(errors.length == 4)
     }
 
+    it("Should support the manual specification of the driver host") {
+      val driverHost = Spark.sc.getConf.get("spark.driver.host")
+      val logger = LoggerFactory.getLogger("test", driverHost)
+      LoggerFactory.setLevel(Level.OFF)
+      logger.trace("Hello world!")
+      Thread.sleep(200)
+      val log = baos.toString
+      log should not include ("[TRACE] test: Hello world!")
+    }
+
     it("Double starts shouldn't break things") {
       LoggerFactory.start()
       val logger = LoggerFactory.getLogger("test")
