@@ -20,3 +20,8 @@ package software.uncharted.splog
   * Pimp both SparkContext and SparkSession to allow the creation of worker-aware loggers
   */
 trait SparkLogging extends LoggingSparkContext with LoggingSparkSession
+
+/**
+  * Object version of trait SparkLogging so that it can be imported into various contexts for its implicits
+  */
+object SparkLogging extends SparkLogging
