@@ -20,6 +20,15 @@ import org.apache.log4j.Level
 import java.net.{InetAddress, Socket}
 import java.io.ObjectOutputStream
 
+/**
+  * A class that can log messages from a remote machine, logging the messages locally.  It's
+  * primary purpose is to log messages from workers during a spark job.
+  *
+  * @param name The name by which this logger is known.  This is also used as the name by which an
+  *             apache logger is retrieved, in order to actually log any messages this logger is given.
+  * @param port The port at which to contact the machine on which messages are to be logged
+  * @param driverHost The machine on which messages are to be logged
+  */
 class Logger(name: String,
              port: Int,
              driverHost: String

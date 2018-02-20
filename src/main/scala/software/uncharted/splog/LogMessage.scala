@@ -17,7 +17,16 @@ package software.uncharted.splog
 
 import org.apache.log4j.Level
 
+/**
+  * A simple serializable case class to use to transmit log messages from workers to the logging machine
+  *
+  * @param loggerName The name of the logger that should log this message
+  * @param level The log level of this message
+  * @param message The text message to be logged
+  * @param exception The exception to be logged
+  */
 case class LogMessage (loggerName: String, level: Level, message: String, exception: Option[Throwable]) {
+  /** Log this message */
   def output: Unit = {
     exception match {
       case Some(e) =>
