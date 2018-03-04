@@ -26,7 +26,6 @@ object LoggerFactory {
   private val conf: Config = ConfigFactory.load();
   private[splog] val port = conf.getInt("splog.port")
   private val threads = conf.getInt("splog.threads")
-  private var dateFormat = conf.getString("splog.date.format")
   @transient private var receiver: Option[Receiver] = None;
 
   def setLevel (level: Level): Unit = {
