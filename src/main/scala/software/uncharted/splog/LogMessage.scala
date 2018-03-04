@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package software.uncharted.splog
 
-object Level extends Enumeration {
-  type Level = Value
-  val TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF = Value
+import org.apache.log4j.Level
+
+case class LogMessage (loggerName: String, level: Level, message: String, exception: Option[Throwable]) {
+  def output: Unit = {
+    exception match {
+      case Some(e) =>
+        org.apache.log4j.Logger.getLogger(loggerName).log(level, message, e)
+      case _ =>
+        org.apache.log4j.Logger.getLogger(loggerName).log(level, message)
+    }
+  }
 }

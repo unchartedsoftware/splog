@@ -33,7 +33,7 @@ sealed class SparkSessionLogger (session: SparkSession) {
         + " Please instantiate your logger outside the closure and let Spark serialize it in.")
     } else {
       LoggerFactory.start()
-      new Logger(port, source, session.conf.get("spark.driver.host"))
+      new Logger(source, port, session.conf.get("spark.driver.host"))
     }
   }
 }

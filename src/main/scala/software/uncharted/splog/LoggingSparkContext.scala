@@ -33,7 +33,7 @@ sealed class SparkContextLogger (sc: SparkContext) {
         + " Please instantiate your logger outside the closure and let Spark serialize it in.")
     } else {
       LoggerFactory.start()
-      new Logger(port, source, sc.getConf.get("spark.driver.host"))
+      new Logger(source, port, sc.getConf.get("spark.driver.host"))
     }
   }
 }

@@ -16,33 +16,27 @@
 
 package software.uncharted.splog
 
+import org.apache.log4j.Level
 import org.apache.spark.{TaskContext, SparkContext}
 import com.typesafe.config.{Config, ConfigFactory}
 
 object LoggerFactory {
-  import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
+  // scalastyle:ignore
 
   private val conf: Config = ConfigFactory.load();
   private[splog] val port = conf.getInt("splog.port")
-  private var level = Level.withName(conf.getString("splog.level"))
   private val threads = conf.getInt("splog.threads")
   private var dateFormat = conf.getString("splog.date.format")
   @transient private var receiver: Option[Receiver] = None;
 
-  def setLevel(level: Level): Unit = {
-    this.synchronized {
-      LoggerFactory.level = level
-    }
+  def setLevel (level: Level): Unit = {
+    org.apache.log4j.Logger.getRootLogger.setLevel(level)
   }
 
-  def getLevel: Level = {
-    level
-  }
-
-  def start(out: java.io.PrintStream = Console.out): Unit = {
+  def start(): Unit = {
     this.synchronized {
       if (inDriver && !LoggerFactory.receiver.isDefined) {
-        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, dateFormat, out, threads))
+        LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, threads))
         new Thread(LoggerFactory.receiver.get).start
       }
     }
@@ -61,13 +55,13 @@ object LoggerFactory {
     TaskContext.get == null
   }
 
-  def getLogger(source: String = "root", driverHost: Option[String] = None): Logger = {
+  def getLogger(name: String = "root", driverHost: Option[String] = None): Logger = {
     if (!inDriver) {
       throw new Exception("Cannot use getLogger() inside a Spark task (such as inside a map() closure)."
         + " Please instantiate your logger outside the closure and let Spark serialize it in.")
     } else {
       this.start()
-      new Logger(port, source, driverHost.getOrElse(SparkContext.getOrCreate().getConf.get("spark.driver.host")))
+      new Logger(name, port, driverHost.getOrElse(SparkContext.getOrCreate().getConf.get("spark.driver.host")))
     }
   }
 }
