@@ -15,17 +15,13 @@
  */
 package software.uncharted.splog
 
-import org.apache.spark.SharedSparkContext
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.scalatest.FunSpec
 
-class SparkSessionLoggerSpec extends FunSpec with SharedSparkContext with LoggingSparkSession {
+class SparkSessionLoggerSpec extends FunSpec with LoggingSparkSession {
   describe("splog.LoggingSparkSession") {
     it("Should be able to get a logger directly from a spark session using implicits") {
-      // Hack used that we won't need anymore come spark 2.3
-      val spark: SparkSession = new SQLContext(sc).sparkSession
-
-      assert(spark.getLogger("abc").isInstanceOf[Logger])
+      assert(Spark.sparkSession.getLogger("abc").isInstanceOf[Logger])
     }
   }
 }

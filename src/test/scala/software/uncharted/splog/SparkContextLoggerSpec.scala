@@ -15,13 +15,12 @@
  */
 package software.uncharted.splog
 
-import org.apache.spark.SharedSparkContext
 import org.scalatest.FunSpec
 
-class SparkContextLoggerSpec extends FunSpec with SharedSparkContext with LoggingSparkContext {
+class SparkContextLoggerSpec extends FunSpec with LoggingSparkContext {
   describe("splog.LoggingSparkContext") {
     it("Should be able to get a logger directly from a spark context using implicits") {
-      assert(sc.getLogger("abc").isInstanceOf[Logger])
+      assert(Spark.sc.getLogger("abc").isInstanceOf[Logger])
     }
   }
 }
