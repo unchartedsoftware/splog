@@ -23,7 +23,7 @@ object LoggerFactory {
   import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
 
   private val conf: Config = ConfigFactory.load();
-  private val port = conf.getInt("splog.port")
+  private[splog] val port = conf.getInt("splog.port")
   private var level = Level.withName(conf.getString("splog.level"))
   private val threads = conf.getInt("splog.threads")
   private var dateFormat = conf.getString("splog.date.format")
