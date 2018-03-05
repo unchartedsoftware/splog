@@ -91,7 +91,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfterEach with Matchers {
       logger.trace("Hello world!")
 
       val log = testAppender.getCurrentOutput
-      log should not include ("[TRACE] test: Hello world!")
+      log should not include ("Hello world")
     }
 
     it("Should throw an Exception if the client tries to retrieve a logger inside a Spark TaskContext") {
@@ -113,7 +113,7 @@ class LoggerSpec extends FunSpec with BeforeAndAfterEach with Matchers {
       logger.trace("Hello world!")
 
       val log = testAppender.getCurrentOutput
-      log should not include ("[TRACE] test: Hello world!")
+      log should not include ("Hello world")
     }
 
     it("Double starts shouldn't break things") {
@@ -212,6 +212,15 @@ class LoggerSpec extends FunSpec with BeforeAndAfterEach with Matchers {
         val log = testAppender.getCurrentOutput
         log should include ("[WARN] test: Hello world!")
         log should include ("whoops!")
+      }
+
+      it("Should not send messages of level WARN when the log level is higher than WARN") {
+        val logger = LoggerFactory.getLogger("test")
+        LoggerFactory.setLevel(Level.ERROR)
+        logger.warn("Hello, world!")
+
+        var log = testAppender.getCurrentOutput
+        log should not include ("Hello world")
       }
     }
 
