@@ -17,3 +17,4 @@ _site
 .project
 .settings
 bin
+out
