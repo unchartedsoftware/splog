@@ -22,16 +22,5 @@ class SparkContextLoggerSpec extends FunSpec with LoggingSparkContext {
     it("Should be able to get a logger directly from a spark context using implicits") {
       assert(Spark.sc.getLogger("abc").isInstanceOf[Logger])
     }
-    it("Should fail when called inside a worker") {
-      val errors = Spark.sc.parallelize(1 to 4).flatMap(r => {
-        try {
-          new SparkContextLogger(Spark.sc).getLogger("test")
-          Seq()
-        } catch {
-          case e: Exception => Seq(e.toString)
-        }
-      }).collect
-      assert(errors.length == 4)
-    }
   }
 }
