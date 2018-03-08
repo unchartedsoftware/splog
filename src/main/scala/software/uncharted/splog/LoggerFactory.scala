@@ -36,7 +36,9 @@ object LoggerFactory {
     this.synchronized {
       if (inDriver && !LoggerFactory.receiver.isDefined) {
         LoggerFactory.receiver = Some(new Receiver(LoggerFactory.port, threads))
-        new Thread(LoggerFactory.receiver.get).start
+        val receiverThread = new Thread(LoggerFactory.receiver.get)
+        receiverThread.setDaemon(true)
+        receiverThread.start
       }
     }
   }
