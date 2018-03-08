@@ -15,13 +15,23 @@
  */
 package software.uncharted.splog
 
-import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.scalatest.FunSpec
 
 class SparkSessionLoggerSpec extends FunSpec with LoggingSparkSession {
   describe("splog.LoggingSparkSession") {
     it("Should be able to get a logger directly from a spark session using implicits") {
       assert(Spark.sparkSession.getLogger("abc").isInstanceOf[Logger])
+    }
+    it("Should fail when called inside a worker") {
+      val errors = Spark.sc.parallelize(1 to 4).flatMap(r => {
+        try {
+          new SparkSessionLogger(Spark.sparkSession).getLogger("test")
+          Seq()
+        } catch {
+          case e: Exception => Seq(e.toString)
+        }
+      }).collect
+      assert(errors.length == 4)
     }
   }
 }
