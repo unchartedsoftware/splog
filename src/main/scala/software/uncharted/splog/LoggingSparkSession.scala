@@ -29,8 +29,13 @@ trait LoggingSparkSession {
 sealed class SparkSessionLogger (session: SparkSession) {
   def getLogger (source: String = "root"): Logger = {
     if (!inDriver) {
+      // In reality, there's no way to get a SparkSession on a worker, so this test and branch is probably
+      // unnecessary.  Still, it seems good to have here in case we're wrong, or that changes, or even
+      // just to document the condition.
+      // $COVERAGE-OFF$
       throw new Exception("Cannot use getLogger() inside a Spark task (such as inside a map() closure)."
         + " Please instantiate your logger outside the closure and let Spark serialize it in.")
+      // $COVERAGE-ON$
     } else {
       LoggerFactory.start()
       new Logger(source, port, session.conf.get("spark.driver.host"))

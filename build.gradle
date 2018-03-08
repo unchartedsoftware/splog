@@ -109,11 +109,7 @@ task depsJar(type: Jar) {
 }
 
 checkScoverage {
-  // 2 lines I can't get coverage on, 1 each in LoggingSparkContext and LoggingSparkSession.
-  // I can't get anything to even compile with a test that checks that getting a logger through
-  // these mechanisms fails on the worker.  Any solution to this would involve exposing these
-  // classes to abuse that would make them less safe.
-  minimumRate = 0.97
+  minimumRate = 1
 }
 
 task testJar(type: Jar) {
