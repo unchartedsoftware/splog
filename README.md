@@ -9,7 +9,7 @@
 *build.gradle*
 
 ```groovy
-compile  "software.uncharted.splog:splog:0.1.0"
+compile  "software.uncharted.splog:splog:0.2.0"
 ```
 
 Logging with splog is intimately tied to spark, allowing the logging mechanism to communicate from worker to master).  Because of this, instead of obtaining loggers statically at class construction time, as is often typical, one instead should obtain loggers dynamically, from an existing spark context or spark session. For example:
