@@ -12,19 +12,45 @@
 compile  "software.uncharted.splog:splog:0.1.0"
 ```
 
+Logging with splog is intimately tied to spark, allowing the logging mechanism to communicate from worker to master).  Because of this, instead of obtaining loggers statically at class construction time, as is often typical, one instead should obtain loggers dynamically, from an existing spark context or spark session. For example:
+
 *Script.scala*
 
 ```scala
 import software.uncharted.splog.LoggerFactory
 
-val logger = LoggerFactory.getLogger("test")
-logger.info("Hello world!") // we can log outside!
-rdd.foreach(r => {
-  logger.info(r._2) // we can log inside!
-})
+class Foo extends software.uncharted.splog.SparkLogging {
+  def doStuffWithContext (sc: SparkContext): Any = {
+    val logger = sc.getLogger("test")
+    logger.info("Hello world!") // we can log outside!
+    sc.parallelize(1 to 10).foreach(n =>
+      // we can log inside!
+      logger.info(s"We got number $n")
+    )
+  }
+  def doStuffWithSession (session: SparkSession): Any = {
+    import session.implicits._
+    val logger = session.getLogger("test")
+    logger.info("Hello world!") // we can log outside!
+    (1 to 10).toDS.foreach(n =>
+      // we can log inside!
+      logger.info(s"We got number $n")
+    )
+  }
+}
 // we can log everywhere!!!
 ```
 
+*Script.java*
+```java
+import software.uncharted.splog.*;
+class Foo {
+  public void doStuffWithContext (SparkContext sc) {
+    Logger logger = new SparkContextLogger(sc).getLogger("test")
+    // TODO: Fill in java version here
+  }
+}
+```
 ## Configuration
 
 Add the following to your `resources/application.properties`:
