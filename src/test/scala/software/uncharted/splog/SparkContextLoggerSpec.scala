@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package software.uncharted.splog
 
-object Level extends Enumeration {
-  type Level = Value
-  val TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF = Value
+import org.scalatest.FunSpec
+
+class SparkContextLoggerSpec extends FunSpec with LoggingSparkContext {
+  describe("splog.LoggingSparkContext") {
+    it("Should be able to get a logger directly from a spark context using implicits") {
+      assert(Spark.sc.getLogger("abc").isInstanceOf[Logger])
+    }
+  }
 }

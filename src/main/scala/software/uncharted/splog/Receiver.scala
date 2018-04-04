@@ -17,22 +17,20 @@
 package software.uncharted.splog
 
 import java.net.ServerSocket
-import java.io.PrintStream
+import java.io.{ObjectInputStream, PrintStream}
+
 import scala.io.BufferedSource
 import scala.util.Try
-import java.util.concurrent.{Executors, ExecutorService}
+import java.util.concurrent.{ExecutorService, Executors}
 
 private[splog] class Receiver(
   port: Int,
-  dateFormat: String = "yy/MM/dd HH:mm:ss z",
-  out: PrintStream = Console.out,
   threads: Int = 4
 ) extends Runnable {
-  import Level.{Level, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF} // scalastyle:ignore
+  // scalastyle:ignore
 
   @volatile private var shouldRun = true
   private val server = new ServerSocket(port.toInt)
-  private val format = new java.text.SimpleDateFormat(dateFormat)
   private val pool: ExecutorService = Executors.newFixedThreadPool(threads)
 
   def stop(): Unit = {
@@ -45,10 +43,14 @@ private[splog] class Receiver(
       while (shouldRun) {
         Try({
           val s = server.accept() // blocks until a message comes in
-          val in = new BufferedSource(s.getInputStream()).getLines()
-          // spin off worker to handle message
-          pool.execute(new Printer(in.next, out, format))
+          val in = new ObjectInputStream(s.getInputStream).readObject().asInstanceOf[LogMessage]
           s.close
+
+          pool.execute(new Runnable {
+            override def run(): Unit = {
+              in.output
+            }
+          })
         })
       }
     } finally {
