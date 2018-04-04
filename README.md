@@ -20,19 +20,18 @@ Logging with splog is intimately tied to spark, allowing the logging mechanism t
 import software.uncharted.splog.LoggerFactory
 
 class Foo extends software.uncharted.splog.SparkLogging {
-  def doStuffWithContext (sc: SparkContext): Any = {
-    val logger = sc.getLogger("test")
+  def doStuffWithContext (sc: SparkContext, data: RDD[Int]): Any = {
+    val logger = sc.getLogger("test 1")
     logger.info("Hello world!") // we can log outside!
-    sc.parallelize(1 to 10).foreach(n =>
+    data.foreach(n =>
       // we can log inside!
       logger.info(s"We got number $n")
     )
   }
-  def doStuffWithSession (session: SparkSession): Any = {
-    import session.implicits._
-    val logger = session.getLogger("test")
+  def doStuffWithSession (session: SparkSession, data: Dataset[Int]): Any = {
+    val logger = session.getLogger("test 2")
     logger.info("Hello world!") // we can log outside!
-    (1 to 10).toDS.foreach(n =>
+    data.foreach(n =>
       // we can log inside!
       logger.info(s"We got number $n")
     )
@@ -45,9 +44,21 @@ class Foo extends software.uncharted.splog.SparkLogging {
 ```java
 import software.uncharted.splog.*;
 class Foo {
-  public void doStuffWithContext (SparkContext sc) {
-    Logger logger = new SparkContextLogger(sc).getLogger("test")
-    // TODO: Fill in java version here
+  public void doStuffWithContext (JavaSparkContext sc, JavaRDD<Integer> data) {
+    Logger logger = new SparkContextLogger(sc.sc()).getLogger("test");
+    logger.info("Hello world!"); // we can log outside!
+    data.foreach(n ->
+      // we can log inside!
+      logger.info(String.format("We got number %d", n))
+    );
+  }
+  public void doStuffWithSession (SparkSession session, Dataset<Integer> data) {
+    Logger logger = new SparkSessionLogger(session).getLogger("test");
+    logger.info("Hello world!"); // we can log outside!
+    data.foreach((ForeachFunction<Integer>) n ->
+      // we can log inside!
+      logger.info(String.format("We got number %d", n))
+    );
   }
 }
 ```
@@ -57,10 +68,10 @@ Add the following to your `resources/application.properties`:
 
 ```
 splog.port=12345 # Pick an available port
-splog.level=TRACE # TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
 splog.threads=4 # Number of "printing" threads. Increase if you're sending lots of messages per second.
-splog.date.format="yy/MM/dd HH:mm:ss z" # Anything that can be passed to SimpleDateFormat
 ```
+
+Log output is governed by the same Apache logging used throughout Spark. Log output is therefore configured in the standard way (for example, using log4j.properties) that Apache logging is always configured.
 
 ## Shut up Spark
 
